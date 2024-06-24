@@ -86,6 +86,7 @@ const ProductTable: React.FC = () => {
         color="primary"
         startIcon={<AddIcon />}
         onClick={() => setShowModal(true)}
+        size='large'
       >
         Add Product
       </Button>
