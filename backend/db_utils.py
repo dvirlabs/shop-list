@@ -1,56 +1,79 @@
 # db_utils.py
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from typing import List, Optional
+from pydantic import BaseModel
 
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from .models import Product as DBProduct
-from typing import List
+# Database connection parameters
+DATABASE_URL = "postgresql://shop_user:123456@localhost:5432/shop_list"
 
-DATABASE_URL = "postgresql://shop_user:shop123456@192.168.1.28/shop_list"
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+# Pydantic model for API request and response
+class ProductBase(BaseModel):
+    product_name: str
+    buy: bool
+    note: Optional[str]
 
-class Product(Base):
-    __tablename__ = "products"
-    id = Column(Integer, primary_key=True, index=True)
-    product_name = Column(String, index=True)
-    buy = Column(Boolean, default=False)
-    note = Column(Text, nullable=True)
+class ProductCreate(ProductBase):
+    pass
 
-Base.metadata.create_all(bind=engine)
+class ProductUpdate(ProductBase):
+    id: int
+
+class ProductSchema(BaseModel):
+    id: int
+    product_name: str
+    buy: bool
+    note: Optional[str]
 
 def get_db():
-    db = SessionLocal()
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     try:
-        yield db
+        yield conn
     finally:
-        db.close()
-        
-def get_products(db: Session) -> List[DBProduct]:
-    return db.query(DBProduct).all()
+        conn.close()
 
-def create_product(db: Session, product_name: str, buy: bool, note: str):
-    db_product = Product(product_name=product_name, buy=buy, note=note)
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
-    return db_product
-
-def delete_product(db: Session, product_id: int):
-    db_product = db.query(Product).filter(Product.id == product_id).first()
-    if db_product:
-        db.delete(db_product)
+def create_product(db, product: ProductCreate) -> ProductSchema:
+    with db.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO products (product_name, buy, note) VALUES (%s, %s, %s) RETURNING id, product_name, buy, note",
+            (product.product_name, product.buy, product.note)
+        )
+        new_product = cursor.fetchone()
         db.commit()
-    return db_product
+        return new_product
 
-def update_product(db: Session, product_id: int, product_name: str, buy: bool, note: str):
-    db_product = db.query(Product).filter(Product.id == product_id).first()
-    if db_product:
-        db_product.product_name = product_name
-        db_product.buy = buy
-        db_product.note = note
+def update_product(db, product_id: int, product: ProductUpdate) -> Optional[ProductSchema]:
+    with db.cursor() as cursor:
+        cursor.execute(
+            "UPDATE products SET product_name = %s, buy = %s, note = %s WHERE id = %s RETURNING id, product_name, buy, note",
+            (product.product_name, product.buy, product.note, product_id)
+        )
+        updated_product = cursor.fetchone()
         db.commit()
-        db.refresh(db_product)
-    return db_product
+        return updated_product
+
+def delete_product(db, product_id: int) -> Optional[ProductSchema]:
+    with db.cursor() as cursor:
+        cursor.execute(
+            "DELETE FROM products WHERE id = %s RETURNING id, product_name, buy, note",
+            (product_id,)
+        )
+        deleted_product = cursor.fetchone()
+        db.commit()
+        return deleted_product
+
+def read_products(db, skip: int = 0, limit: int = 10) -> List[ProductSchema]:
+    with db.cursor() as cursor:
+        cursor.execute(
+            "SELECT id, product_name, buy, note FROM products ORDER BY id OFFSET %s LIMIT %s",
+            (skip, limit)
+        )
+        products = cursor.fetchall()
+        return products
+
+def get_all_products(db) -> List[ProductSchema]:
+    with db.cursor() as cursor:
+        cursor.execute("SELECT id, product_name, buy, note FROM products")
+        products = cursor.fetchall()
+        return products
