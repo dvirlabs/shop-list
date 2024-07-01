@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: shop_postgres
+    environment:
+      POSTGRES_USER: shop_user
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: shop_list
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
