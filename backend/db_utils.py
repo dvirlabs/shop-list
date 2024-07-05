@@ -1,14 +1,10 @@
-# db_utils.py
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Optional
 from pydantic import BaseModel
 
-# Database connection parameters
 DATABASE_URL = "postgresql://shop_user:123456@localhost:5432/shop_list"
 
-
-# Pydantic model for API request and response
 class ProductBase(BaseModel):
     product_name: str
     buy: bool
@@ -26,6 +22,10 @@ class ProductSchema(BaseModel):
     buy: bool
     note: Optional[str]
 
+class TableMetadata(BaseModel):
+    table_name: str
+    title: str
+
 def get_db():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     try:
@@ -33,10 +33,10 @@ def get_db():
     finally:
         conn.close()
 
-def create_product(db, product: ProductCreate) -> ProductSchema:
+def create_product_in_table(db, table_name: str, product: ProductCreate) -> ProductSchema:
     with db.cursor() as cursor:
         cursor.execute(
-            "INSERT INTO products (product_name, buy, note) VALUES (%s, %s, %s) RETURNING id, product_name, buy, note",
+            f"INSERT INTO {table_name} (product_name, buy, note) VALUES (%s, %s, %s) RETURNING id, product_name, buy, note",
             (product.product_name, product.buy, product.note)
         )
         new_product = cursor.fetchone()
@@ -63,17 +63,39 @@ def delete_product(db, product_id: int) -> Optional[ProductSchema]:
         db.commit()
         return deleted_product
 
-def read_products(db, skip: int = 0, limit: int = 10) -> List[ProductSchema]:
+def read_products(db, table_name: str, skip: int = 0, limit: int = 10) -> List[ProductSchema]:
     with db.cursor() as cursor:
         cursor.execute(
-            "SELECT id, product_name, buy, note FROM products ORDER BY id OFFSET %s LIMIT %s",
+            f"SELECT id, product_name, buy, note FROM {table_name} ORDER BY id OFFSET %s LIMIT %s",
             (skip, limit)
         )
         products = cursor.fetchall()
         return products
 
-def get_all_products(db) -> List[ProductSchema]:
+def get_all_tables(db) -> List[TableMetadata]:
     with db.cursor() as cursor:
-        cursor.execute("SELECT id, product_name, buy, note FROM products")
-        products = cursor.fetchall()
-        return products
+        cursor.execute("SELECT table_name, title FROM table_metadata")
+        tables = cursor.fetchall()
+        return tables
+
+def create_new_table(db, title: str):
+    with db.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name LIKE 'products_%'")
+        table_count = cursor.fetchone()["count"]
+        new_table_name = f"products_{table_count + 1}"
+        cursor.execute(
+            f"""
+            CREATE TABLE {new_table_name} (
+                id SERIAL PRIMARY KEY,
+                product_name VARCHAR(255) NOT NULL,
+                buy BOOLEAN NOT NULL,
+                note TEXT
+            )
+            """
+        )
+        cursor.execute(
+            "INSERT INTO table_metadata (table_name, title) VALUES (%s, %s)",
+            (new_table_name, title)
+        )
+        db.commit()
+        return new_table_name

@@ -1,25 +1,24 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import uvicorn
-from db_utils import get_db, create_product, update_product, delete_product, read_products, get_all_products, ProductCreate, ProductUpdate, ProductSchema
+from db_utils import get_db, create_product_in_table, update_product, delete_product, read_products, get_all_tables, create_new_table, ProductCreate, ProductUpdate, ProductSchema, TableMetadata
 
-# Initialize FastAPI
 app = FastAPI()
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace with your frontend URL during development
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Routes for CRUD operations
-@app.post("/products/", response_model=ProductSchema)
-def create_product_route(product: ProductCreate, db=Depends(get_db)):
-    return create_product(db, product)
+@app.post("/products/{table_name}/", response_model=ProductSchema)
+def add_product_to_table_route(table_name: str, product: ProductCreate, db=Depends(get_db)):
+    return create_product_in_table(db, table_name, product)
 
 @app.put("/products/{product_id}", response_model=ProductSchema)
 def update_product_route(product_id: int, product: ProductUpdate, db=Depends(get_db)):
@@ -35,15 +34,21 @@ def delete_product_route(product_id: int, db=Depends(get_db)):
         return deleted_product
     raise HTTPException(status_code=404, detail="Product not found")
 
-@app.get("/products/", response_model=List[ProductSchema])
-def read_products_route(skip: int = 0, limit: int = 10, db=Depends(get_db)):
-    return read_products(db, skip, limit)
+@app.get("/products/{table_name}/", response_model=List[ProductSchema])
+def read_products_route(table_name: str, skip: int = 0, limit: int = 10, db=Depends(get_db)):
+    return read_products(db, table_name, skip, limit)
 
-# New route to fetch all products
-@app.get("/table", response_model=List[ProductSchema])
-def get_all_products_route(db=Depends(get_db)):
-    return get_all_products(db)
+@app.get("/tables", response_model=List[TableMetadata])
+def get_all_tables_route(db=Depends(get_db)):
+    return get_all_tables(db)
 
-# If you want to run the FastAPI server directly
+# New route to create a new table
+@app.post("/create_table/")
+async def create_table_route(request: Request, db=Depends(get_db)):
+    data = await request.json()
+    title = data['title']
+    new_table_name = create_new_table(db, title)
+    return {"table_name": new_table_name, "title": title}
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)

@@ -1,17 +1,13 @@
-import * as Components from './assets';
+// App.tsx
 import React from 'react';
+import * as Components from './assets';
 
 const App: React.FC = () => {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Product List</h1>
-      </header>
-      <main>
-        <Components.ProductTable />
-      </main>
-    </div>
-  );
+    return (
+        <div className="App">
+            <Components.ShoppingList />
+        </div>
+    );
 };
 
 export default App;
