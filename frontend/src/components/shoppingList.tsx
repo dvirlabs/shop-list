@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Typography, Button, TextField, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
+import { AddNewProduct } from '../assets/index'; // Adjust the import path as needed
+
+type Product = {
+    id: number;
+    product_name: string;
+    buy: boolean;
+    note?: string;
+};
+
+type ProductsState = {
+    [key: string]: Product[];
+};
 
 const ShoppingList: React.FC = () => {
     const [title, setTitle] = useState<string>('');
     const [tables, setTables] = useState<{ table_name: string; title: string; }[]>([]);
+    const [products, setProducts] = useState<ProductsState>({});
 
     useEffect(() => {
         const fetchTables = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/tables'); 
-                setTables(response.data);
+                const tables = response.data;
+                setTables(tables);
+
+                // Fetch products for each table
+                const productsData: ProductsState = {};
+                for (const table of tables) {
+                    const productsResponse = await axios.get(`http://localhost:8000/products/${table.table_name}/`);
+                    productsData[table.table_name] = productsResponse.data;
+                }
+                setProducts(productsData);
             } catch (error) {
                 console.error('Error fetching tables', error);
             }
@@ -29,6 +51,18 @@ const ShoppingList: React.FC = () => {
             setTitle('');
         } catch (error) {
             console.error('Error creating table', error);
+        }
+    };
+
+    const refreshProducts = async (tableName: string) => {
+        try {
+            const response = await axios.get(`http://localhost:8000/products/${tableName}/`);
+            setProducts(prevProducts => ({
+                ...prevProducts,
+                [tableName]: response.data
+            }));
+        } catch (error) {
+            console.error('Error fetching products', error);
         }
     };
 
@@ -74,10 +108,18 @@ const ShoppingList: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {/* Render table rows based on your data structure */}
+                                {products[table.table_name]?.map((product) => (
+                                    <TableRow key={product.id}>
+                                        <TableCell>{product.id}</TableCell>
+                                        <TableCell>{product.product_name}</TableCell>
+                                        <TableCell>{product.buy ? 'Yes' : 'No'}</TableCell>
+                                        <TableCell>{product.note}</TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
+                    <AddNewProduct tableName={table.table_name} onProductAdded={() => refreshProducts(table.table_name)} />
                 </Box>
             ))}
         </Container>
