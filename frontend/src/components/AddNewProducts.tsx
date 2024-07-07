@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button, TextField, Box, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, Switch } from '@mui/material';
+import '../style/AddNewProducts.css'
 
 interface AddNewProductProps {
     tableName: string;
@@ -55,23 +56,23 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
 
     return (
         <>
-            <Box display="flex" alignItems="center" mb={3}>
+            <Box className="add-btn" display="flex" alignItems="center" mb={3}>
                 <Button
                     variant="contained"
                     color="primary"
                     onClick={handleOpen} // Open the dialog on button click
                     sx={{ ml: 2 }}
                 >
-                    Add Product
+                    הוסף מוצר
                 </Button>
             </Box>
 
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add New Product</DialogTitle>
+                <DialogTitle>הוסף מוצר חדש</DialogTitle>
                 <DialogContent>
                     <TextField
                         name="product_name"
-                        label="Product Name"
+                        label="שם מוצר"
                         value={productData.product_name}
                         onChange={handleInputChange}
                         variant="outlined"
@@ -80,11 +81,11 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
                     />
                     <FormControlLabel
                         control={<Switch checked={productData.buy} onChange={handleBuyChange} />}
-                        label="Buy"
+                        label="?לקנות"
                     />
                     <TextField
                         name="note"
-                        label="Note"
+                        label="הערות"
                         value={productData.note}
                         onChange={handleInputChange}
                         variant="outlined"
@@ -94,10 +95,10 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
-                        Cancel
+                        ביטול
                     </Button>
                     <Button onClick={addProduct} color="primary">
-                        Add
+                        הוסף
                     </Button>
                 </DialogActions>
             </Dialog>

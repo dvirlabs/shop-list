@@ -108,13 +108,13 @@ const ShoppingList: React.FC = () => {
 
     return (
         <Container>
-            <Typography variant="h3" gutterBottom>
-                Shopping List
+            <Typography align="center" variant="h3" gutterBottom>
+                רשימת קניות
             </Typography>
 
             <Box display="flex" alignItems="center" mb={3}>
                 <TextField
-                    label="Enter list title"
+                    label="הכנס רשימת קניות חדשה"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     variant="outlined"
@@ -122,7 +122,7 @@ const ShoppingList: React.FC = () => {
                     margin="normal"
                 />
                 <Button variant="contained" color="primary" onClick={createTable} sx={{ ml: 2 }}>
-                    Create Table
+                    צור רשימה
                 </Button>
             </Box>
 
@@ -146,21 +146,21 @@ const ShoppingList: React.FC = () => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>ID</TableCell>
-                                    <TableCell>Product Name</TableCell>
-                                    <TableCell>Buy</TableCell>
-                                    <TableCell>Note</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>ID</TableCell> 
+                                    <TableCell sx={{ textAlign: 'center' }}>שם מוצר</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>לקנות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>הערות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>פעולות</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {products[table.table_name]?.map((product) => (
                                     <TableRow key={product.id}>
-                                        <TableCell>{product.id}</TableCell>
-                                        <TableCell>{product.product_name}</TableCell>
-                                        <TableCell>{product.buy ? 'Yes' : 'No'}</TableCell>
-                                        <TableCell>{product.note}</TableCell>
-                                        <TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.id}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.product_name}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.buy ? 'Yes' : 'No'}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.note}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>
                                             <DeleteProduct
                                                 productId={product.id}
                                                 tableName={table.table_name}
