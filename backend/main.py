@@ -1,7 +1,12 @@
+# main.py
+
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import uvicorn
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from pydantic import BaseModel
 from db_utils import get_db, create_product_in_table, update_product, delete_product, read_products, get_all_tables, create_new_table, ProductCreate, ProductUpdate, ProductSchema, TableMetadata
 
 app = FastAPI()
@@ -16,6 +21,7 @@ app.add_middleware(
 )
 
 # Routes for CRUD operations
+
 @app.post("/products/{table_name}/", response_model=ProductSchema)
 def add_product_to_table_route(table_name: str, product: ProductCreate, db=Depends(get_db)):
     return create_product_in_table(db, table_name, product)
@@ -42,7 +48,6 @@ def read_products_route(table_name: str, skip: int = 0, limit: int = 10, db=Depe
 def get_all_tables_route(db=Depends(get_db)):
     return get_all_tables(db)
 
-# New route to create a new table
 @app.post("/create_table/")
 async def create_table_route(request: Request, db=Depends(get_db)):
     data = await request.json()

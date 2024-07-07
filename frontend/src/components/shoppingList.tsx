@@ -4,6 +4,7 @@ import { Typography, Button, TextField, Container, Table, TableBody, TableCell, 
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import AddNewProduct from './AddNewProducts';
 import EditProduct from './EditProduct';
+import DeleteProduct from './DeleteProduct'; // Import DeleteProduct component
 import { Table as TableType, Product } from '../utils/types';
 
 const ShoppingList: React.FC = () => {
@@ -62,7 +63,7 @@ const ShoppingList: React.FC = () => {
 
     const deleteProduct = async (productId: number, tableName: string) => {
         try {
-            await axios.delete(`http://localhost:8000/products/${productId}`);
+            await axios.delete(`http://localhost:8000/products/${tableName}/${productId}`);
             refreshProducts(tableName);
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -130,9 +131,11 @@ const ShoppingList: React.FC = () => {
                                         <TableCell>{product.buy ? 'Yes' : 'No'}</TableCell>
                                         <TableCell>{product.note}</TableCell>
                                         <TableCell>
-                                            <IconButton onClick={() => deleteProduct(product.id, table.table_name)}>
-                                                <DeleteIcon />
-                                            </IconButton>
+                                            <DeleteProduct
+                                                productId={product.id}
+                                                tableName={table.table_name}
+                                                onDeleteSuccess={() => refreshProducts(table.table_name)}
+                                            />
                                             <IconButton onClick={() => openEditDialog(product, table.table_name)}>
                                                 <EditIcon />
                                             </IconButton>
