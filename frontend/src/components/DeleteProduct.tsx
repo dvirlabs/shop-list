@@ -35,16 +35,16 @@ const DeleteProduct: React.FC<DeleteProductProps> = ({ productId, tableName, onD
     return (
         <>
             <IconButton onClick={handleOpen}>
-                <DeleteIcon />
+                <DeleteIcon color='error' />
             </IconButton>
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogTitle>האם אתה בטוח שברצונך למחוק מוצר זה</DialogTitle>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
-                        Cancel
+                        ביטול
                     </Button>
                     <Button onClick={handleDelete} color="secondary">
-                        Delete
+                        מחק
                     </Button>
                 </DialogActions>
             </Dialog>

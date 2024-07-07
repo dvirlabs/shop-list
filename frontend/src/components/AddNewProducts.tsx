@@ -68,8 +68,8 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
             </Box>
 
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>הוסף מוצר חדש</DialogTitle>
-                <DialogContent>
+                <DialogTitle sx={{textAlign: 'right'}}>הוסף מוצר חדש</DialogTitle>
+                <DialogContent sx={{textAlign: 'right'}}>
                     <TextField
                         name="product_name"
                         label="שם מוצר"
@@ -78,6 +78,20 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
                         variant="outlined"
                         fullWidth
                         margin="normal"
+                        InputProps={{
+                            sx: {
+                                textAlign: 'right',
+                                '& .MuiInputBase-input': {
+                                    textAlign: 'right',
+                                }
+                            },
+                        }}
+                        InputLabelProps={{
+                            sx: {
+                                textAlign: 'right',
+                                direction: 'rtl',
+                            }
+                        }}
                     />
                     <FormControlLabel
                         control={<Switch checked={productData.buy} onChange={handleBuyChange} />}
@@ -91,6 +105,20 @@ const AddNewProduct: React.FC<AddNewProductProps> = ({ tableName, onProductAdded
                         variant="outlined"
                         fullWidth
                         margin="normal"
+                        InputProps={{
+                            sx: {
+                                textAlign: 'right',
+                                '& .MuiInputBase-input': {
+                                    textAlign: 'right',
+                                }
+                            },
+                        }}
+                        InputLabelProps={{
+                            sx: {
+                                textAlign: 'right',
+                                direction: 'rtl',
+                            }
+                        }}
                     />
                 </DialogContent>
                 <DialogActions>

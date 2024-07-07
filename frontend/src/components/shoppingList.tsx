@@ -6,6 +6,7 @@ import AddNewProduct from './AddNewProducts';
 import EditProduct from './EditProduct';
 import DeleteProduct from './DeleteProduct'; // Import DeleteProduct component
 import { Table as TableType, Product } from '../utils/types';
+import '../style/shoppingList.css'
 
 const ShoppingList: React.FC = () => {
     const [title, setTitle] = useState<string>('');
@@ -120,6 +121,14 @@ const ShoppingList: React.FC = () => {
                     variant="outlined"
                     fullWidth
                     margin="normal"
+                    InputProps={{
+                        sx: {
+                            textAlign: 'right',
+                            '& .MuiInputBase-input': {
+                                textAlign: 'right',
+                            }
+                        }
+                    }}
                 />
                 <Button variant="contained" color="primary" onClick={createTable} sx={{ ml: 2 }}>
                     צור רשימה
@@ -127,7 +136,7 @@ const ShoppingList: React.FC = () => {
             </Box>
 
             {title && (
-                <Typography variant="h5" gutterBottom>
+                <Typography className='table-title' variant="h5" gutterBottom>
                     {title}
                 </Typography>
             )}
@@ -139,27 +148,24 @@ const ShoppingList: React.FC = () => {
                             {table.title}
                         </Typography>
                         <IconButton onClick={() => handleTableDeleteClick(table.table_name)} size="small" sx={{ ml: 2 }}>
-                            <DeleteForeverIcon />
+                            <DeleteForeverIcon color='error' />
                         </IconButton>
                     </Box>
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell sx={{ textAlign: 'center' }}>ID</TableCell> 
-                                    <TableCell sx={{ textAlign: 'center' }}>שם מוצר</TableCell>
-                                    <TableCell sx={{ textAlign: 'center' }}>לקנות</TableCell>
-                                    <TableCell sx={{ textAlign: 'center' }}>הערות</TableCell>
+                                    {/* <TableCell sx={{ textAlign: 'center' }}>ID</TableCell>  */}
                                     <TableCell sx={{ textAlign: 'center' }}>פעולות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>הערות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>לקנות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>שם מוצר</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {products[table.table_name]?.map((product) => (
                                     <TableRow key={product.id}>
-                                        <TableCell sx={{ textAlign: 'center' }}>{product.id}</TableCell>
-                                        <TableCell sx={{ textAlign: 'center' }}>{product.product_name}</TableCell>
-                                        <TableCell sx={{ textAlign: 'center' }}>{product.buy ? 'כן' : 'לא'}</TableCell>
-                                        <TableCell sx={{ textAlign: 'center' }}>{product.note}</TableCell>
+                                        {/* <TableCell sx={{ textAlign: 'center' }}>{product.id}</TableCell> */}
                                         <TableCell sx={{ textAlign: 'center' }}>
                                             <DeleteProduct
                                                 productId={product.id}
@@ -167,9 +173,12 @@ const ShoppingList: React.FC = () => {
                                                 onDeleteSuccess={() => refreshProducts(table.table_name)}
                                             />
                                             <IconButton onClick={() => openEditDialog(product, table.table_name)}>
-                                                <EditIcon />
+                                                <EditIcon color='warning' />
                                             </IconButton>
                                         </TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.note}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.buy ? 'כן' : 'לא'}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.product_name}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -191,13 +200,13 @@ const ShoppingList: React.FC = () => {
 
             {/* Delete Table Confirmation Dialog */}
             <Dialog open={deleteConfirmationOpen} onClose={handleCloseDeleteConfirmation}>
-                <DialogTitle>Confirm Delete Table</DialogTitle>
+                <DialogTitle>האם אתה בטוח שברצונך למחוק טבלה זו</DialogTitle>
                 <DialogActions>
                     <Button onClick={handleCloseDeleteConfirmation} color="primary">
-                        Cancel
+                        ביטול
                     </Button>
                     <Button onClick={handleDeleteTableConfirmation} color="secondary">
-                        Delete Table
+                        מחק טבלה
                     </Button>
                 </DialogActions>
             </Dialog>
