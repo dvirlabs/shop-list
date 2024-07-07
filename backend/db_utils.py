@@ -104,3 +104,10 @@ def create_new_table(db, title: str):
         )
         db.commit()
         return new_table_name
+
+def delete_table(db, table_name: str):
+    with db.cursor() as cursor:
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+        cursor.execute("DELETE FROM table_metadata WHERE table_name = %s", (table_name,))
+        db.commit()
+        return True

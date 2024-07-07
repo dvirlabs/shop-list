@@ -7,7 +7,7 @@ import uvicorn
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
-from db_utils import get_db, create_product_in_table, update_product, delete_product, read_products, get_all_tables, create_new_table, ProductCreate, ProductUpdate, ProductSchema, TableMetadata
+from db_utils import get_db, create_product_in_table, update_product, delete_product, read_products, get_all_tables, create_new_table, delete_table, ProductCreate, ProductUpdate, ProductSchema, TableMetadata
 
 app = FastAPI()
 
@@ -21,7 +21,6 @@ app.add_middleware(
 )
 
 # Routes for CRUD operations
-
 @app.post("/products/{table_name}/", response_model=ProductSchema)
 def add_product_to_table_route(table_name: str, product: ProductCreate, db=Depends(get_db)):
     return create_product_in_table(db, table_name, product)
@@ -54,6 +53,13 @@ async def create_table_route(request: Request, db=Depends(get_db)):
     title = data['title']
     new_table_name = create_new_table(db, title)
     return {"table_name": new_table_name, "title": title}
+
+@app.delete("/tables/{table_name}", response_model=dict)
+def delete_table_route(table_name: str, db=Depends(get_db)):
+    deleted_table = delete_table(db, table_name)
+    if deleted_table:
+        return {"message": f"Table {table_name} deleted successfully"}
+    raise HTTPException(status_code=404, detail=f"Table {table_name} not found")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)

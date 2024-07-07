@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Typography, Button, TextField, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, IconButton } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Typography, Button, TextField, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, IconButton, Dialog, DialogTitle, DialogActions } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon, DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
 import AddNewProduct from './AddNewProducts';
 import EditProduct from './EditProduct';
 import DeleteProduct from './DeleteProduct'; // Import DeleteProduct component
@@ -14,6 +14,8 @@ const ShoppingList: React.FC = () => {
     const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
     const [currentTable, setCurrentTable] = useState<string>('');
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState<boolean>(false);
+    const [tableToDelete, setTableToDelete] = useState<string>('');
 
     useEffect(() => {
         const fetchTables = async () => {
@@ -70,6 +72,16 @@ const ShoppingList: React.FC = () => {
         }
     };
 
+    const deleteTable = async (tableName: string) => {
+        try {
+            await axios.delete(`http://localhost:8000/tables/${tableName}`);
+            setTables(prevTables => prevTables.filter(table => table.table_name !== tableName));
+        } catch (error) {
+            console.error('Error deleting table:', error);
+        }
+        setDeleteConfirmationOpen(false);
+    };
+
     const openEditDialog = (product: Product, tableName: string) => {
         setProductToEdit(product);
         setCurrentTable(tableName);
@@ -79,6 +91,19 @@ const ShoppingList: React.FC = () => {
     const closeEditDialog = () => {
         setEditDialogOpen(false);
         setProductToEdit(null);
+    };
+
+    const handleTableDeleteClick = (tableName: string) => {
+        setTableToDelete(tableName);
+        setDeleteConfirmationOpen(true);
+    };
+
+    const handleDeleteTableConfirmation = () => {
+        deleteTable(tableToDelete);
+    };
+
+    const handleCloseDeleteConfirmation = () => {
+        setDeleteConfirmationOpen(false);
     };
 
     return (
@@ -109,9 +134,14 @@ const ShoppingList: React.FC = () => {
 
             {tables.map((table, index) => (
                 <Box key={index} mb={4}>
-                    <Typography variant="h6" gutterBottom>
-                        {table.title}
-                    </Typography>
+                    <Box display="flex" alignItems="center">
+                        <Typography variant="h6" gutterBottom>
+                            {table.title}
+                        </Typography>
+                        <IconButton onClick={() => handleTableDeleteClick(table.table_name)} size="small" sx={{ ml: 2 }}>
+                            <DeleteForeverIcon />
+                        </IconButton>
+                    </Box>
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
@@ -158,6 +188,19 @@ const ShoppingList: React.FC = () => {
                     handleClose={closeEditDialog}
                 />
             )}
+
+            {/* Delete Table Confirmation Dialog */}
+            <Dialog open={deleteConfirmationOpen} onClose={handleCloseDeleteConfirmation}>
+                <DialogTitle>Confirm Delete Table</DialogTitle>
+                <DialogActions>
+                    <Button onClick={handleCloseDeleteConfirmation} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDeleteTableConfirmation} color="secondary">
+                        Delete Table
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };
