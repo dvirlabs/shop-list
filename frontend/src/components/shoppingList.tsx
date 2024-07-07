@@ -158,7 +158,7 @@ const ShoppingList: React.FC = () => {
                                     <TableRow key={product.id}>
                                         <TableCell sx={{ textAlign: 'center' }}>{product.id}</TableCell>
                                         <TableCell sx={{ textAlign: 'center' }}>{product.product_name}</TableCell>
-                                        <TableCell sx={{ textAlign: 'center' }}>{product.buy ? 'Yes' : 'No'}</TableCell>
+                                        <TableCell sx={{ textAlign: 'center' }}>{product.buy ? 'כן' : 'לא'}</TableCell>
                                         <TableCell sx={{ textAlign: 'center' }}>{product.note}</TableCell>
                                         <TableCell sx={{ textAlign: 'center' }}>
                                             <DeleteProduct
