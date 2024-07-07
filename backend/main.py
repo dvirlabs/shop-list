@@ -56,10 +56,11 @@ async def create_table_route(request: Request, db=Depends(get_db)):
 
 @app.delete("/tables/{table_name}", response_model=dict)
 def delete_table_route(table_name: str, db=Depends(get_db)):
-    deleted_table = delete_table(db, table_name)
-    if deleted_table:
+    deleted = delete_table(db, table_name)
+    if deleted:
         return {"message": f"Table {table_name} deleted successfully"}
-    raise HTTPException(status_code=404, detail=f"Table {table_name} not found")
+    else:
+        raise HTTPException(status_code=404, detail=f"Table {table_name} not found or error occurred")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8000)

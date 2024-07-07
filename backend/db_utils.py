@@ -1,5 +1,3 @@
-# db_utils.py
-
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Optional
@@ -83,14 +81,24 @@ def get_all_tables(db) -> List[TableMetadata]:
         tables = cursor.fetchall()
         return tables
 
-def create_new_table(db, title: str):
+def create_new_table(db, title: str) -> str:
     with db.cursor() as cursor:
+        # Check if the table already exists
         cursor.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_name LIKE 'products_%'")
-        table_count = cursor.fetchone()["count"]
+        table_count_row = cursor.fetchone()
+
+        # Extract count if result exists
+        if table_count_row:
+            table_count = table_count_row.get('count', 0)
+        else:
+            table_count = 0
+        
         new_table_name = f"products_{table_count + 1}"
+        
+        # Create the new table
         cursor.execute(
             f"""
-            CREATE TABLE {new_table_name} (
+            CREATE TABLE IF NOT EXISTS {new_table_name} (
                 id SERIAL PRIMARY KEY,
                 product_name VARCHAR(255) NOT NULL,
                 buy BOOLEAN NOT NULL,
@@ -98,16 +106,23 @@ def create_new_table(db, title: str):
             )
             """
         )
+
+        # Insert metadata into table_metadata
         cursor.execute(
             "INSERT INTO table_metadata (table_name, title) VALUES (%s, %s)",
             (new_table_name, title)
         )
+
         db.commit()
         return new_table_name
 
-def delete_table(db, table_name: str):
-    with db.cursor() as cursor:
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-        cursor.execute("DELETE FROM table_metadata WHERE table_name = %s", (table_name,))
-        db.commit()
-        return True
+def delete_table(db, table_name: str) -> bool:
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+            cursor.execute("DELETE FROM table_metadata WHERE table_name = %s", (table_name,))
+            db.commit()
+        return True  # Return True if deletion was successful
+    except psycopg2.Error as e:
+        print(f"Database error occurred while deleting table {table_name}: {e}")
+        return False  # Return False indicating deletion failed
