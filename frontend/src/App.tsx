@@ -1,11 +1,12 @@
 // App.tsx
+
 import React from 'react';
-import * as Components from './assets';
+import { ShoppingList } from './assets';
 
 const App: React.FC = () => {
     return (
         <div className="App">
-            <Components.ShoppingList />
+            <ShoppingList />
         </div>
     );
 };

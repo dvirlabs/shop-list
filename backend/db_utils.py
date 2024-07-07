@@ -1,3 +1,5 @@
+# db_utils.py
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Optional
@@ -5,6 +7,15 @@ from pydantic import BaseModel
 
 DATABASE_URL = "postgresql://shop_user:123456@localhost:5432/shop_list"
 
+# Database connection setup
+def get_db():
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+# Models
 class ProductBase(BaseModel):
     product_name: str
     buy: bool
@@ -26,13 +37,7 @@ class TableMetadata(BaseModel):
     table_name: str
     title: str
 
-def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    try:
-        yield conn
-    finally:
-        conn.close()
-
+# Database operations
 def create_product_in_table(db, table_name: str, product: ProductCreate) -> ProductSchema:
     with db.cursor() as cursor:
         cursor.execute(
@@ -43,20 +48,20 @@ def create_product_in_table(db, table_name: str, product: ProductCreate) -> Prod
         db.commit()
         return new_product
 
-def update_product(db, product_id: int, product: ProductUpdate) -> Optional[ProductSchema]:
+def update_product(db, table_name: str, product_id: int, product: ProductUpdate) -> Optional[ProductSchema]:
     with db.cursor() as cursor:
         cursor.execute(
-            "UPDATE products SET product_name = %s, buy = %s, note = %s WHERE id = %s RETURNING id, product_name, buy, note",
+            f"UPDATE {table_name} SET product_name = %s, buy = %s, note = %s WHERE id = %s RETURNING id, product_name, buy, note",
             (product.product_name, product.buy, product.note, product_id)
         )
         updated_product = cursor.fetchone()
         db.commit()
         return updated_product
 
-def delete_product(db, product_id: int) -> Optional[ProductSchema]:
+def delete_product(db, table_name: str, product_id: int) -> Optional[ProductSchema]:
     with db.cursor() as cursor:
         cursor.execute(
-            "DELETE FROM products WHERE id = %s RETURNING id, product_name, buy, note",
+            f"DELETE FROM {table_name} WHERE id = %s RETURNING id, product_name, buy, note",
             (product_id,)
         )
         deleted_product = cursor.fetchone()
