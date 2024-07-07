@@ -20,16 +20,16 @@ app.add_middleware(
 def add_product_to_table_route(table_name: str, product: ProductCreate, db=Depends(get_db)):
     return create_product_in_table(db, table_name, product)
 
-@app.put("/products/{product_id}", response_model=ProductSchema)
-def update_product_route(product_id: int, product: ProductUpdate, db=Depends(get_db)):
-    updated_product = update_product(db, product_id, product)
+@app.put("/products/{table_name}/{product_id}", response_model=ProductSchema)
+def update_product_route(table_name: str, product_id: int, product: ProductUpdate, db=Depends(get_db)):
+    updated_product = update_product(db, table_name, product_id, product)
     if updated_product:
         return updated_product
     raise HTTPException(status_code=404, detail="Product not found")
 
-@app.delete("/products/{product_id}", response_model=ProductSchema)
-def delete_product_route(product_id: int, db=Depends(get_db)):
-    deleted_product = delete_product(db, product_id)
+@app.delete("/products/{table_name}/{product_id}", response_model=ProductSchema)
+def delete_product_route(table_name: str, product_id: int, db=Depends(get_db)):
+    deleted_product = delete_product(db, table_name, product_id)
     if deleted_product:
         return deleted_product
     raise HTTPException(status_code=404, detail="Product not found")

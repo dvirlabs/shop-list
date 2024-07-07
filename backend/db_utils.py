@@ -43,22 +43,26 @@ def create_product_in_table(db, table_name: str, product: ProductCreate) -> Prod
         db.commit()
         return new_product
 
-def update_product(db, product_id: int, product: ProductUpdate) -> Optional[ProductSchema]:
+def update_product(db, table_name: str, product_id: int, product: ProductUpdate) -> Optional[ProductSchema]:
     with db.cursor() as cursor:
+        query = f"""
+            UPDATE {table_name} 
+            SET product_name = %s, buy = %s, note = %s 
+            WHERE id = %s 
+            RETURNING id, product_name, buy, note
+        """
         cursor.execute(
-            "UPDATE products SET product_name = %s, buy = %s, note = %s WHERE id = %s RETURNING id, product_name, buy, note",
+            query,
             (product.product_name, product.buy, product.note, product_id)
         )
         updated_product = cursor.fetchone()
         db.commit()
         return updated_product
 
-def delete_product(db, product_id: int) -> Optional[ProductSchema]:
+def delete_product(db, table_name: str, product_id: int) -> Optional[ProductSchema]:
     with db.cursor() as cursor:
-        cursor.execute(
-            "DELETE FROM products WHERE id = %s RETURNING id, product_name, buy, note",
-            (product_id,)
-        )
+        query = f"DELETE FROM {table_name} WHERE id = %s RETURNING id, product_name, buy, note"
+        cursor.execute(query, (product_id,))
         deleted_product = cursor.fetchone()
         db.commit()
         return deleted_product

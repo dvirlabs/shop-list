@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Typography, Button, TextField, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
-import { AddNewProduct } from '../assets/index'; // Adjust the import path as needed
-
-type Product = {
-    id: number;
-    product_name: string;
-    buy: boolean;
-    note?: string;
-};
-
-type ProductsState = {
-    [key: string]: Product[];
-};
+import { Typography, Button, TextField, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, IconButton } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import AddNewProduct from './AddNewProducts';
+import EditProduct from './EditProduct';
+import { Table as TableType, Product } from '../utils/types';
 
 const ShoppingList: React.FC = () => {
     const [title, setTitle] = useState<string>('');
-    const [tables, setTables] = useState<{ table_name: string; title: string; }[]>([]);
-    const [products, setProducts] = useState<ProductsState>({});
+    const [tables, setTables] = useState<TableType[]>([]);
+    const [products, setProducts] = useState<{ [key: string]: Product[] }>({});
+    const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+    const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+    const [currentTable, setCurrentTable] = useState<string>('');
 
     useEffect(() => {
         const fetchTables = async () => {
@@ -26,8 +21,7 @@ const ShoppingList: React.FC = () => {
                 const tables = response.data;
                 setTables(tables);
 
-                // Fetch products for each table
-                const productsData: ProductsState = {};
+                const productsData: { [key: string]: Product[] } = {};
                 for (const table of tables) {
                     const productsResponse = await axios.get(`http://localhost:8000/products/${table.table_name}/`);
                     productsData[table.table_name] = productsResponse.data;
@@ -64,6 +58,26 @@ const ShoppingList: React.FC = () => {
         } catch (error) {
             console.error('Error fetching products', error);
         }
+    };
+
+    const deleteProduct = async (productId: number, tableName: string) => {
+        try {
+            await axios.delete(`http://localhost:8000/products/${productId}`);
+            refreshProducts(tableName);
+        } catch (error) {
+            console.error('Error deleting product:', error);
+        }
+    };
+
+    const openEditDialog = (product: Product, tableName: string) => {
+        setProductToEdit(product);
+        setCurrentTable(tableName);
+        setEditDialogOpen(true);
+    };
+
+    const closeEditDialog = () => {
+        setEditDialogOpen(false);
+        setProductToEdit(null);
     };
 
     return (
@@ -105,6 +119,7 @@ const ShoppingList: React.FC = () => {
                                     <TableCell>Product Name</TableCell>
                                     <TableCell>Buy</TableCell>
                                     <TableCell>Note</TableCell>
+                                    <TableCell>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -114,6 +129,14 @@ const ShoppingList: React.FC = () => {
                                         <TableCell>{product.product_name}</TableCell>
                                         <TableCell>{product.buy ? 'Yes' : 'No'}</TableCell>
                                         <TableCell>{product.note}</TableCell>
+                                        <TableCell>
+                                            <IconButton onClick={() => deleteProduct(product.id, table.table_name)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                            <IconButton onClick={() => openEditDialog(product, table.table_name)}>
+                                                <EditIcon />
+                                            </IconButton>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -122,6 +145,16 @@ const ShoppingList: React.FC = () => {
                     <AddNewProduct tableName={table.table_name} onProductAdded={() => refreshProducts(table.table_name)} />
                 </Box>
             ))}
+
+            {productToEdit && (
+                <EditProduct
+                    product={productToEdit}
+                    tableName={currentTable}
+                    onProductEdited={() => refreshProducts(currentTable)}
+                    open={editDialogOpen}
+                    handleClose={closeEditDialog}
+                />
+            )}
         </Container>
     );
 };
