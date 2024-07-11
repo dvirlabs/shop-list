@@ -136,11 +136,10 @@ const ShoppingList: React.FC = () => {
             </Box>
 
             {title && (
-                <Typography className='table-title' variant="h5" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                     {title}
                 </Typography>
             )}
-
             {tables.map((table, index) => (
                 <Box key={index} mb={4}>
                     <Box display="flex" alignItems="center">
@@ -156,10 +155,10 @@ const ShoppingList: React.FC = () => {
                             <TableHead>
                                 <TableRow>
                                     {/* <TableCell sx={{ textAlign: 'center' }}>ID</TableCell>  */}
-                                    <TableCell sx={{ textAlign: 'center' }}>פעולות</TableCell>
-                                    <TableCell sx={{ textAlign: 'center' }}>הערות</TableCell>
-                                    <TableCell sx={{ textAlign: 'center' }}>לקנות</TableCell>
-                                    <TableCell sx={{ textAlign: 'center' }}>שם מוצר</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', backgroundColor: 'skyblue' }}>פעולות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', backgroundColor: 'skyblue' }}>הערות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', backgroundColor: 'skyblue' }}>לקנות</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', backgroundColor: 'skyblue' }}>שם מוצר</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
