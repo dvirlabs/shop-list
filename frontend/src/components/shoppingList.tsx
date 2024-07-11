@@ -140,6 +140,7 @@ const ShoppingList: React.FC = () => {
                     {title}
                 </Typography>
             )}
+            
             {tables.map((table, index) => (
                 <Box key={index} mb={4}>
                     <Box display="flex" alignItems="center">
