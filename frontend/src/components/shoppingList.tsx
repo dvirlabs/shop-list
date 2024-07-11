@@ -109,7 +109,7 @@ const ShoppingList: React.FC = () => {
 
     return (
         <Container>
-            <Typography align="center" variant="h3" gutterBottom>
+            <Typography align="center" variant="h3" fontFamily={'fantasy'} gutterBottom>
                 רשימת קניות
             </Typography>
 
@@ -140,14 +140,14 @@ const ShoppingList: React.FC = () => {
                     {title}
                 </Typography>
             )}
-            
+
             {tables.map((table, index) => (
                 <Box key={index} mb={4}>
                     <Box display="flex" alignItems="center">
-                        <Typography variant="h6" gutterBottom>
+                        <Typography sx={{ textAlign: 'right', position: 'absolute', right: 220}} variant="h6" gutterBottom>
                             {table.title}
                         </Typography>
-                        <IconButton onClick={() => handleTableDeleteClick(table.table_name)} size="small" sx={{ ml: 2 }}>
+                        <IconButton onClick={() => handleTableDeleteClick(table.table_name)} size="large" sx={{ ml: 2 }}>
                             <DeleteForeverIcon color='error' />
                         </IconButton>
                     </Box>
